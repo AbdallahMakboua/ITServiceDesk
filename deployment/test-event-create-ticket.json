@@ -1,0 +1,5 @@
+{
+  "httpMethod": "POST",
+  "path": "/tickets",
+  "body": "{\"caller_id\": \"poc-user-001\", \"issue_description\": \"Test ticket - Laptop not turning on\"}"
+}
