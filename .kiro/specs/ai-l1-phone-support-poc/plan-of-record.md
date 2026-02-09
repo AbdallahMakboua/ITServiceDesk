@@ -4,7 +4,7 @@
 **Version:** 1.0  
 **Date:** 2026-02-09  
 **Region:** us-east-1 ONLY  
-**Budget Cap:** $10 USD  
+**Budget Alert:** $10 USD total, $8 USD alert threshold (AWS Budgets provides alerts only, not enforcement)  
 **Deployment Mode:** PLAN-FIRST, TASK-BY-TASK, NO AUTO-DEPLOY
 
 ---
@@ -16,7 +16,8 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 **Critical Constraints:**
 - NO production ManageEngine ServiceDesk Plus integration
 - ONLY whitelisted AWS services (Connect, Bedrock AgentCore, Lambda, API Gateway, DynamoDB, S3, IAM, CloudWatch, Budgets)
-- $10 USD total budget with alerts at $8 USD
+- $10 USD total budget with alert at $8 USD (AWS Budgets provides alerts only, not spending enforcement)
+- Manual Stop Rule: If spending reaches $8 USD, pause work immediately and execute cleanup
 - us-east-1 region exclusively
 - Explicit approval gates before ANY AWS resource creation
 
@@ -39,7 +40,7 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 
 ### Task 0.1: Budget Setup Planning
 
-**Goal:** Document AWS Budgets configuration steps for $10 cap with $8 alert threshold.
+**Goal:** Document AWS Budgets configuration steps for $10 total budget with $8 alert threshold.
 
 **Inputs:**
 - Requirements.md (Requirement 4)
@@ -51,6 +52,8 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - Maps to Requirement 4.6: Configure AWS Budgets alerts at $8 USD (80% threshold)
 - Document includes budget name, amount ($10), alert threshold ($8), notification email setup
 - Document specifies us-east-1 region constraint
+- Document clarifies that AWS Budgets provides alerts only, not spending enforcement
+- Manual Stop Rule documented: If spending reaches $8 USD, pause work immediately and execute cleanup
 
 **Verification:**
 - Manual review of documentation completeness
@@ -651,9 +654,9 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - Maps to Requirement 14.2: AgentCore Gateway IAM limited to invoking Mock API
 - Maps to Requirement 14.4: NO wildcard (*) permissions
 - Policy allows: secretsmanager:GetSecretValue on poc-itsm-api-key
-- Policy allows: execute-api:Invoke on Mock ITSM API Gateway (if using API Gateway)
-- Policy allows: lambda:InvokeFunction on poc-itsm-api-handler (if using Function URL)
-- Policy allows: logs:CreateLogGroup, logs:CreateLogStream, logs:PutLogEvents
+- IF using API Gateway: Policy allows execute-api:Invoke scoped to the specific API/stage
+- IF using Lambda Function URL: No Lambda invoke permissions required (Function URL is HTTPS + API key); only secretsmanager:GetSecretValue and logging permissions required
+- Policy allows: logs:CreateLogGroup, logs:CreateLogStream, logs:PutLogEvents (if logging is required)
 - Trust policy allows bedrock.amazonaws.com to assume role
 
 **Verification:**
@@ -743,7 +746,8 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - Check CloudWatch logs for successful tool invocations
 
 **Rollback/Cleanup:**
-- Delete AgentCore Gateway: `aws bedrock-agent delete-agent-action-group` (or equivalent command)
+- Delete AgentCore Gateway via AWS Console (Bedrock AgentCore) or the officially supported CLI/API for AgentCore Gateway (to be confirmed during implementation)
+- Placeholder: “Exact CLI command to be confirmed during implementation”.
 - Verify deletion in Console
 
 ---
@@ -791,7 +795,7 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - Region: us-east-1
 - Identity management: Store users in Amazon Connect (minimal setup)
 - Data storage: Default settings (call recordings disabled to save costs)
-- Telephony: Claim a phone number for testing (free tier if available)
+- Telephony: Claim the cheapest available DID; keep test calls minimal (2-3 short calls); release number immediately after tests
 
 **Verification:**
 - AWS CLI or Console to verify Connect instance is active
@@ -1046,7 +1050,7 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - Test steps:
   1. Call phone number
   2. Say: "I need help with my laptop. It won't turn on."
-  3. Provide caller identification when asked (e.g., "My name is John")
+  3. Caller identity is derived from session identifier or hashed phone number; if AI Agent asks for identification, provide a non-sensitive PoC alias (e.g., "poc-user-01")
   4. Confirm ticket creation when AI Agent asks
   5. Note ticket ID provided by AI Agent
 - Expected results:
@@ -1145,7 +1149,7 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - Test steps:
   1. Call phone number
   2. Say: "Show me my recent tickets"
-  3. Provide caller identification when asked
+  3. Caller identity is derived from session identifier or hashed phone number; if AI Agent asks for identification, provide a non-sensitive PoC alias (e.g., "poc-user-01")
 - Expected results:
   - AI Agent queries DynamoDB GSI by caller_id
   - AI Agent lists recent tickets (e.g., "You have 1 ticket: Ticket 12345 about laptop issue")
@@ -1234,7 +1238,7 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - [ ] All test results documented
 - [ ] PoC demonstrates complete voice-first L1 support flow
 - [ ] NO production ITSM integration present
-- [ ] Cost tracking shows spending within $10 budget
+- [ ] Cost tracking shows spending within $10 budget (manual stop at $8 alert)
 
 **Approval Required From:** Project Stakeholder / Technical Lead
 
@@ -1258,12 +1262,12 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - `docs/cost-analysis.md` - Final cost breakdown and analysis
 
 **Acceptance Criteria:**
-- Maps to Requirement 4.1: Total spending within $10 USD budget
+- Maps to Requirement 4.1: Total spending within $10 USD budget (with manual stop at $8 USD alert)
 - Maps to Requirement 17.6: Cost estimates and actual spending
 - Document includes:
   - Cost breakdown by service (Connect, Bedrock, Lambda, API Gateway, DynamoDB, S3, etc.)
   - Total actual spending
-  - Comparison to $10 budget
+  - Comparison to $10 budget (with $8 alert threshold)
   - Any budget alerts triggered
   - Recommendations for cost optimization if PoC were to continue
 
@@ -1327,7 +1331,7 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 - Verify all AgentCore and Connect IAM resources are removed
 
 **Verification:**
-- AWS CLI to verify AgentCore Gateway is deleted
+- Delete AgentCore Gateway via AWS Console (Bedrock AgentCore) or the officially supported CLI/API for AgentCore Gateway (to be confirmed during implementation)
 - AWS CLI to verify IAM roles and policies are deleted
 - Confirm no ongoing Bedrock charges
 
@@ -1491,7 +1495,7 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 **STOP HERE - FINAL REVIEW**
 
 **Review Checklist:**
-- [ ] Cost analysis documented and within $10 budget
+- [ ] Cost analysis documented and within $10 budget (manual stop at $8 alert)
 - [ ] All Amazon Connect resources deleted
 - [ ] All AgentCore Gateway resources deleted
 - [ ] All Mock ITSM backend resources deleted (API Gateway, Lambda, DynamoDB)
@@ -1570,10 +1574,12 @@ This Plan of Record defines the incremental, test-driven delivery approach for b
 **Likelihood:** Medium  
 **Impact:** High  
 **Mitigation:**
-- AWS Budget alert at $8 USD (80% threshold)
+- AWS Budget alert at $8 USD (80% threshold) - note that AWS Budgets provides alerts only, not spending enforcement
+- Manual Stop Rule: If spending reaches $8 USD, pause work immediately and execute cleanup
 - Use on-demand billing for DynamoDB (pay per request)
 - Minimal Lambda memory allocation (256 MB)
 - Default CloudWatch log retention (no extended retention)
+- Claim cheapest available DID for Connect; keep test calls minimal (2-3 short calls); release number immediately after tests
 - Monitor costs daily during PoC
 - Immediate cleanup if approaching budget limit
 
@@ -1670,7 +1676,7 @@ The PoC will be considered successful if ALL of the following criteria are met:
 
 ### Non-Functional Success Criteria
 ✅ NO production ITSM integration present  
-✅ Total cost within $10 USD budget  
+✅ Total cost within $10 USD budget (with manual stop at $8 USD alert threshold)  
 ✅ All resources deployed in us-east-1 only  
 ✅ All IAM policies follow least privilege (no wildcards)  
 ✅ NO sensitive data collected (passwords, MFA codes, device serials)  
