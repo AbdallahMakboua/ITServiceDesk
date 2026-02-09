@@ -1,0 +1,431 @@
+openapi: 3.0.3
+info:
+  title: Mock ITSM API
+  description: |
+    Mock IT Service Management API for DAS Holding AI L1 Voice Service Desk PoC.
+    This is a sandbox API that simulates ITSM ticket operations without touching production systems.
+    
+    **IMPORTANT:** This API is for PoC demonstration purposes only and is completely isolated from production ITSM systems.
+  version: 1.0.0
+  contact:
+    name: PoC Team
+    email: poc-team@example.com
+
+servers:
+  - url: https://{api-gateway-url}/poc
+    description: API Gateway endpoint (to be configured in Task 1.5)
+    variables:
+      api-gateway-url:
+        default: example.execute-api.us-east-1.amazonaws.com
+  - url: https://{lambda-function-url}
+    description: Lambda Function URL (alternative to API Gateway)
+    variables:
+      lambda-function-url:
+        default: example.lambda-url.us-east-1.on.aws
+
+tags:
+  - name: Tickets
+    description: Ticket management operations
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /tickets:
+    post:
+      tags:
+        - Tickets
+      summary: Create a new ticket
+      description: Creates a new support ticket in the mock ITSM system
+      operationId: create_ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketRequest'
+            examples:
+              laptop_issue:
+                summary: Laptop not turning on
+                value:
+                  caller_id: poc-user-001
+                  issue_description: My laptop won't turn on after pressing the power button
+              email_issue:
+                summary: Email not working
+                value:
+                  caller_id: poc-user-002
+                  issue_description: Cannot send or receive emails in Outlook
+      responses:
+        '201':
+          description: Ticket created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTicketResponse'
+              examples:
+                success:
+                  value:
+                    ticket_id: 33567ee8-f182-4f8a-b03e-2f1515915471
+                    status: open
+                    created_at: '2026-02-09T12:20:25.343883Z'
+        '400':
+          description: Invalid request - missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_fields:
+                  value:
+                    error: 'Missing required fields: caller_id and issue_description'
+        '401':
+          description: Unauthorized - missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    get:
+      tags:
+        - Tickets
+      summary: List recent tickets by caller
+      description: Retrieves a list of recent tickets for a specific caller
+      operationId: list_recent_tickets
+      parameters:
+        - name: caller
+          in: query
+          required: true
+          description: Caller identifier to filter tickets
+          schema:
+            type: string
+          example: poc-user-001
+      responses:
+        '200':
+          description: List of tickets retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTicketsResponse'
+              examples:
+                with_tickets:
+                  value:
+                    tickets:
+                      - ticket_id: 33567ee8-f182-4f8a-b03e-2f1515915471
+                        caller_id: poc-user-001
+                        issue_description: My laptop won't turn on
+                        status: open
+                        created_at: '2026-02-09T12:20:25.343883Z'
+                        updated_at: '2026-02-09T12:20:25.343883Z'
+                        comments: []
+                empty:
+                  value:
+                    tickets: []
+        '400':
+          description: Invalid request - missing caller parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tickets/{id}:
+    get:
+      tags:
+        - Tickets
+      summary: Get ticket status
+      description: Retrieves the current status and details of a specific ticket
+      operationId: get_ticket_status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique ticket identifier
+          schema:
+            type: string
+            format: uuid
+          example: 33567ee8-f182-4f8a-b03e-2f1515915471
+      responses:
+        '200':
+          description: Ticket retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+              examples:
+                open_ticket:
+                  value:
+                    ticket_id: 33567ee8-f182-4f8a-b03e-2f1515915471
+                    caller_id: poc-user-001
+                    issue_description: My laptop won't turn on
+                    status: open
+                    created_at: '2026-02-09T12:20:25.343883Z'
+                    updated_at: '2026-02-09T12:20:25.343883Z'
+                    comments: []
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  value:
+                    error: 'Ticket 33567ee8-f182-4f8a-b03e-2f1515915471 not found'
+        '401':
+          description: Unauthorized - missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tickets/{id}/comments:
+    post:
+      tags:
+        - Tickets
+      summary: Add comment to ticket
+      description: Adds a new comment to an existing ticket
+      operationId: add_ticket_comment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique ticket identifier
+          schema:
+            type: string
+            format: uuid
+          example: 33567ee8-f182-4f8a-b03e-2f1515915471
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCommentRequest'
+            examples:
+              update:
+                summary: Status update
+                value:
+                  comment: Tried restarting the laptop but it still won't turn on
+              resolution:
+                summary: Resolution attempt
+                value:
+                  comment: Checked power cable - it was unplugged. Issue resolved.
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddCommentResponse'
+              examples:
+                success:
+                  value:
+                    success: true
+                    updated_at: '2026-02-09T12:30:00.123456Z'
+        '400':
+          description: Invalid request - missing comment field
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key for authentication
+
+  schemas:
+    CreateTicketRequest:
+      type: object
+      required:
+        - caller_id
+        - issue_description
+      properties:
+        caller_id:
+          type: string
+          description: Identifier for the caller (session ID or hashed phone number)
+          example: poc-user-001
+          minLength: 1
+          maxLength: 100
+        issue_description:
+          type: string
+          description: Description of the IT issue
+          example: My laptop won't turn on after pressing the power button
+          minLength: 1
+          maxLength: 1000
+
+    CreateTicketResponse:
+      type: object
+      required:
+        - ticket_id
+        - status
+        - created_at
+      properties:
+        ticket_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the created ticket
+          example: 33567ee8-f182-4f8a-b03e-2f1515915471
+        status:
+          type: string
+          enum: [open]
+          description: Initial status of the ticket
+          example: open
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of ticket creation
+          example: '2026-02-09T12:20:25.343883Z'
+
+    Ticket:
+      type: object
+      required:
+        - ticket_id
+        - caller_id
+        - issue_description
+        - status
+        - created_at
+        - updated_at
+        - comments
+      properties:
+        ticket_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the ticket
+          example: 33567ee8-f182-4f8a-b03e-2f1515915471
+        caller_id:
+          type: string
+          description: Identifier for the caller
+          example: poc-user-001
+        issue_description:
+          type: string
+          description: Description of the IT issue
+          example: My laptop won't turn on
+        status:
+          type: string
+          enum: [open, in_progress, resolved, closed]
+          description: Current status of the ticket
+          example: open
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of ticket creation
+          example: '2026-02-09T12:20:25.343883Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of last update
+          example: '2026-02-09T12:20:25.343883Z'
+        comments:
+          type: array
+          description: List of comments added to the ticket
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    Comment:
+      type: object
+      required:
+        - comment_text
+        - added_at
+      properties:
+        comment_text:
+          type: string
+          description: The comment text
+          example: Tried restarting the laptop but it still won't turn on
+        added_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when comment was added
+          example: '2026-02-09T12:30:00.123456Z'
+
+    AddCommentRequest:
+      type: object
+      required:
+        - comment
+      properties:
+        comment:
+          type: string
+          description: Comment text to add to the ticket
+          example: Tried restarting the laptop but it still won't turn on
+          minLength: 1
+          maxLength: 1000
+
+    AddCommentResponse:
+      type: object
+      required:
+        - success
+        - updated_at
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the comment was added successfully
+          example: true
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the update
+          example: '2026-02-09T12:30:00.123456Z'
+
+    ListTicketsResponse:
+      type: object
+      required:
+        - tickets
+      properties:
+        tickets:
+          type: array
+          description: List of tickets for the caller
+          items:
+            $ref: '#/components/schemas/Ticket'
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+          example: Missing required fields
