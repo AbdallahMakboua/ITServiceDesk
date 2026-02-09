@@ -1,0 +1,100 @@
+{
+  "tools": [
+    {
+      "name": "create_ticket",
+      "description": "Create a new IT support ticket. Use this when the caller describes an IT issue that needs to be tracked.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "caller_id": {
+            "type": "string",
+            "description": "Identifier for the caller (session ID or hashed phone number)"
+          },
+          "issue_description": {
+            "type": "string",
+            "description": "Clear description of the IT issue the caller is experiencing"
+          }
+        },
+        "required": ["caller_id", "issue_description"]
+      },
+      "apiMapping": {
+        "method": "POST",
+        "endpoint": "/tickets",
+        "bodyTemplate": {
+          "caller_id": "{{caller_id}}",
+          "issue_description": "{{issue_description}}"
+        }
+      }
+    },
+    {
+      "name": "get_ticket_status",
+      "description": "Retrieve the current status and details of an existing ticket. Use this when the caller asks about a ticket they previously created.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "The unique ticket identifier (UUID format)"
+          }
+        },
+        "required": ["ticket_id"]
+      },
+      "apiMapping": {
+        "method": "GET",
+        "endpoint": "/tickets/{{ticket_id}}",
+        "pathParameters": {
+          "ticket_id": "{{ticket_id}}"
+        }
+      }
+    },
+    {
+      "name": "add_ticket_comment",
+      "description": "Add additional information or updates to an existing ticket. Use this when the caller provides more details about their issue.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string",
+            "description": "The unique ticket identifier"
+          },
+          "comment": {
+            "type": "string",
+            "description": "The additional information or update to add to the ticket"
+          }
+        },
+        "required": ["ticket_id", "comment"]
+      },
+      "apiMapping": {
+        "method": "POST",
+        "endpoint": "/tickets/{{ticket_id}}/comments",
+        "pathParameters": {
+          "ticket_id": "{{ticket_id}}"
+        },
+        "bodyTemplate": {
+          "comment": "{{comment}}"
+        }
+      }
+    },
+    {
+      "name": "list_recent_tickets",
+      "description": "List recent tickets for a specific caller. Use this when the caller asks to see their previous tickets or ticket history.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "caller_id": {
+            "type": "string",
+            "description": "Identifier for the caller"
+          }
+        },
+        "required": ["caller_id"]
+      },
+      "apiMapping": {
+        "method": "GET",
+        "endpoint": "/tickets",
+        "queryParameters": {
+          "caller": "{{caller_id}}"
+        }
+      }
+    }
+  ]
+}
