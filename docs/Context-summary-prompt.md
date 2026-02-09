@@ -1,8 +1,8 @@
 # Context Summary - DAS Holding AI IT L1 Voice Service Desk PoC
 
 **Last Updated:** 2026-02-09  
-**Current Phase:** Phase 1 Complete - Awaiting Approval Gate 2  
-**Next Phase:** Phase 2 - AgentCore Gateway Configuration
+**Current Phase:** Phase 2 Tasks 2.1-2.3 Complete, Task 2.4 Pending Manual Configuration  
+**Next Phase:** Phase 3 Task 3.1 - Amazon Connect Instance Creation
 
 ---
 
@@ -16,11 +16,15 @@
 
 ---
 
-## Current Status: Phase 1 Complete ✅
+## Current Status: Phase 2 Partially Complete
 
-**Phase 1: Mock ITSM Backend Implementation - COMPLETE**
+**Phase 1: Mock ITSM Backend Implementation - COMPLETE ✅**
 
 All 6 tasks in Phase 1 have been successfully completed and verified. The mock ITSM backend is fully operational with DynamoDB storage, Lambda function, API Gateway REST API, and S3 bucket for OpenAPI specification.
+
+**Phase 2: AgentCore Gateway Configuration - PARTIALLY COMPLETE ⏳**
+
+Tasks 2.1-2.3 are complete. Task 2.4 (AgentCore Gateway Deployment) requires manual configuration AFTER Task 3.1 (Amazon Connect Instance Creation) because it needs the Connect OIDC discovery URL.
 
 ### Completed Tasks
 
@@ -87,23 +91,61 @@ All 6 tasks in Phase 1 have been successfully completed and verified. The mock I
 
 ---
 
-## Approval Gate 2 Status
+## Phase 2: AgentCore Gateway Configuration (Tasks 2.1-2.3 Complete)
 
-**🛑 AWAITING APPROVAL TO PROCEED TO PHASE 2**
+### ✅ Task 2.1: API Key Storage in Secrets Manager
+- **Status:** COMPLETE
+- **Secret:** poc-itsm-api-key
+- **ARN:** arn:aws:secretsmanager:us-east-1:714059461907:secret:poc-itsm-api-key-thEbs7
+- **Value:** API key from Task 1.5 (h8IwZBHEEd5FLaeY6QsnS2SlsJ7tdyN23FQEEJUa)
+- **Encryption:** Default AWS managed key
+- **Region:** us-east-1
+- **Documentation:** `deployment/secrets-manager-log.md`
 
-### Approval Gate 2 Checklist - All Items Complete ✅
+### ✅ Task 2.2: AgentCore Gateway IAM Role Creation
+- **Status:** COMPLETE
+- **Role:** poc-agentcore-gateway-role
+- **Role ARN:** arn:aws:iam::714059461907:role/poc-agentcore-gateway-role
+- **Policy:** poc-agentcore-gateway-policy
+- **Policy ARN:** arn:aws:iam::714059461907:policy/poc-agentcore-gateway-policy
+- **Permissions:**
+  - secretsmanager:GetSecretValue (poc-itsm-api-key)
+  - execute-api:Invoke (API Gateway iixw3qtwo3/poc)
+  - CloudWatch Logs (write)
+- **Trust Policy:** bedrock.amazonaws.com
+- **NO wildcard permissions in actions** ✅
+- **Documentation:** `deployment/agentcore-iam-log.md`
 
-- ✅ DynamoDB table created and queryable
-- ✅ Lambda function deployed with least-privilege IAM role
-- ✅ All unit tests pass (18/18)
-- ✅ API Gateway configured with API key auth
-- ✅ All API contract tests pass (5/5)
-- ✅ OpenAPI spec uploaded to S3
-- ✅ NO production ITSM integrations present
-- ✅ All resources in us-east-1
-- ✅ Cost tracking: < $0.03 (well within $10 budget)
+### ✅ Task 2.3: AgentCore Gateway Tool Definitions
+- **Status:** COMPLETE
+- **File:** `config/agentcore-tools.json`
+- **Tool Count:** 4 (exactly as required)
+- **Tools:**
+  1. create_ticket (POST /tickets)
+  2. get_ticket_status (GET /tickets/{id})
+  3. add_ticket_comment (POST /tickets/{id}/comments)
+  4. list_recent_tickets (GET /tickets?caller={caller_id})
+- **Verification:** All tools match OpenAPI spec exactly ✅
+- **Static definitions:** NO dynamic generation ✅
+- **NO delete or administrative operations** ✅
+- **Documentation:** `deployment/agentcore-tools-verification.md`
 
-**Summary Document:** `deployment/phase-1-completion-summary.md`
+### ⏳ Task 2.4: AgentCore Gateway Deployment
+- **Status:** PENDING MANUAL CONFIGURATION
+- **Reason:** Requires Amazon Connect OIDC URL (available after Task 3.1)
+- **Configuration Guide:** `deployment/agentcore-deployment-manual-guide.md`
+- **Deployment Log:** `deployment/agentcore-deployment-log.md` (to be completed)
+
+**⚠️ IMPORTANT TIMING:**
+- **DO NOT configure AgentCore Gateway yet!**
+- **Correct workflow:**
+  1. ✅ Complete Phase 2 Tasks 2.1-2.3 (DONE)
+  2. ➡️ **NEXT:** Proceed to Phase 3 Task 3.1 (Amazon Connect Instance Creation)
+  3. ➡️ Note the Connect OIDC discovery URL from Task 3.1
+  4. ➡️ **THEN:** Return to Task 2.4 and configure AgentCore Gateway manually
+  5. ➡️ Complete remaining Phase 3 tasks
+
+**Why this order:** AgentCore Gateway requires Connect OIDC URL for inbound authentication. This URL format is `https://<CONNECT_ALIAS>.my.connect.aws/.well-known/openid-configuration` and is only available after Connect instance is created.
 
 ---
 
@@ -150,31 +192,31 @@ All Phase 0 documentation tasks (0.1-0.10) were completed retroactively after us
 
 ---
 
-## Next Phase: Phase 2 - AgentCore Gateway Configuration
+## Next Phase: Phase 3 - Amazon Connect Setup
 
-Once Approval Gate 2 is granted, Phase 2 will configure the Bedrock AgentCore Gateway (MCP server):
+Phase 3 will configure Amazon Connect instance, AI Agent, and contact flow:
 
-### Task 2.1: API Key Storage in Secrets Manager
-- Store Mock ITSM API key in AWS Secrets Manager
-- Secret name: poc-itsm-api-key
-- Encryption: Default AWS managed key
-
-### Task 2.2: AgentCore Gateway IAM Role Creation
-- Create IAM role: poc-agentcore-gateway-role
-- Permissions: secretsmanager:GetSecretValue, execute-api:Invoke (scoped to API Gateway)
-- Trust policy: bedrock.amazonaws.com
-
-### Task 2.3: AgentCore Gateway Tool Definitions
-- Create static tool definitions for 4 operations
-- Tools: create_ticket, get_ticket_status, add_ticket_comment, list_recent_tickets
-- Match OpenAPI spec exactly
-- NO dynamic tool generation
-
-### Task 2.4: AgentCore Gateway Deployment
-- Deploy Bedrock AgentCore Gateway: poc-itsm-agentcore-gateway
-- Inbound auth: Connect OIDC (placeholder until Connect is created)
-- Outbound auth: API key from Secrets Manager
+### Task 3.1: Amazon Connect Instance Creation (NEXT TASK)
+- Create Connect instance: poc-ai-l1-support
 - Region: us-east-1
+- Claim phone number (cheapest DID)
+- Note OIDC discovery URL: `https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration`
+- **This OIDC URL is needed for Task 2.4 (AgentCore Gateway configuration)**
+
+### Task 3.2: Connect AI Agent IAM Role Creation
+- Create IAM role: poc-connect-ai-agent-role
+- Permissions: bedrock:InvokeAgent (scoped to AgentCore Gateway)
+- Trust policy: connect.amazonaws.com
+
+### Task 3.3: AgentCore Gateway OIDC Configuration Update
+- Update AgentCore Gateway with Connect OIDC URL from Task 3.1
+- **Note:** This may be done as part of Task 2.4 manual configuration
+
+### Task 3.4: Connect AI Agent Creation
+- Create AI Agent: poc-l1-support-agent
+- Configure AI Agent instructions (voice-first, short responses)
+- Link to AgentCore Gateway
+- Configure escalation path
 
 ---
 
@@ -182,15 +224,21 @@ Once Approval Gate 2 is granted, Phase 2 will configure the Bedrock AgentCore Ga
 
 **Total Budget:** $10.00  
 **Alert Threshold:** $8.00  
-**Estimated Spent (Phase 1):** < $0.03  
-**Remaining:** > $9.97  
+**Estimated Spent (Phase 1+2):** < $0.50  
+**Remaining:** > $9.50  
 **Status:** WELL WITHIN BUDGET ✅
 
-### Cost Breakdown (Phase 1)
+### Cost Breakdown
+**Phase 1:**
 - DynamoDB: < $0.01 (ON_DEMAND, minimal usage)
 - Lambda: < $0.01 (256 MB, < 100 invocations)
 - API Gateway: < $0.01 (< 100 requests, Free Tier covers)
 - S3: < $0.0001 (13 KB file, Free Tier covers)
+
+**Phase 2:**
+- Secrets Manager: ~$0.40/month (30-day free trial may apply)
+- IAM: Free
+- AgentCore Gateway: TBD (pricing to be confirmed after manual configuration)
 
 ---
 
@@ -268,23 +316,23 @@ S3 Bucket (poc-itsm-openapi-specs-714059461907)
 
 ---
 
-## Files to Read for Phase 2
+## Files to Read for Phase 3
 
-**Critical for Phase 2:**
-- `.kiro/specs/ai-l1-phone-support-poc/plan-of-record.md` (Task 2.1-2.4 details)
-- `docs/agentcore-gateway-config.md` (AgentCore Gateway design)
-- `specs/mock-itsm-api-openapi.yaml` (API specification for tool definitions)
-- `deployment/api-gateway-deployment-log.md` (API key and endpoint details)
+**Critical for Phase 3:**
+- `.kiro/specs/ai-l1-phone-support-poc/plan-of-record.md` (Task 3.1-3.4 details, lines 750-900)
+- `docs/connect-flow-design.md` (Connect flow and AI Agent design)
+- `deployment/agentcore-deployment-manual-guide.md` (for Task 2.4 after Task 3.1)
 
 **Context files:**
 - `.kiro/specs/ai-l1-phone-support-poc/requirements.md` (requirements reference)
 - `docs/iam-policies.md` (IAM policy templates)
+- `deployment/phase-2-summary.md` (Phase 2 status and next steps)
 
 ---
 
 ## Deployment Artifacts
 
-### Documentation
+### Phase 1 Documentation
 - `deployment/dynamodb-creation-log.md`
 - `deployment/iam-creation-log.md`
 - `deployment/lambda-implementation-log.md`
@@ -293,15 +341,26 @@ S3 Bucket (poc-itsm-openapi-specs-714059461907)
 - `deployment/s3-deployment-log.md`
 - `deployment/phase-1-completion-summary.md`
 
+### Phase 2 Documentation
+- `deployment/secrets-manager-log.md` (Task 2.1)
+- `deployment/agentcore-iam-log.md` (Task 2.2)
+- `deployment/agentcore-tools-verification.md` (Task 2.3)
+- `deployment/agentcore-deployment-manual-guide.md` (Task 2.4 guide)
+- `deployment/agentcore-deployment-log.md` (Task 2.4 - to be completed)
+- `deployment/phase-2-summary.md`
+
 ### Code
 - `src/lambda/mock_itsm_handler.py`
 - `src/lambda/requirements.txt`
 - `tests/test_lambda_handler.py`
 - `tests/requirements.txt`
 
-### Configuration
+### Configuration Files
 - `deployment/iam-policy-lambda.json`
 - `deployment/iam-trust-policy-lambda.json`
+- `deployment/iam-policy-agentcore.json` (Phase 2)
+- `deployment/iam-trust-policy-agentcore.json` (Phase 2)
+- `config/agentcore-tools.json` (Phase 2)
 - `deployment/lambda-package.zip`
 - `deployment/test-event-create-ticket.json`
 
@@ -312,11 +371,13 @@ S3 Bucket (poc-itsm-openapi-specs-714059461907)
 When resuming work on this project:
 
 1. **Review this context summary** to understand current status
-2. **Check Approval Gate 2 status** - awaiting approval to proceed to Phase 2
-3. **Read Phase 1 completion summary:** `deployment/phase-1-completion-summary.md`
-4. **Review Plan of Record:** `.kiro/specs/ai-l1-phone-support-poc/plan-of-record.md` (lines 620-750 for Phase 2)
-5. **Verify budget status** before proceeding
-6. **Execute Phase 2 tasks one at a time** with approval gates
+2. **Current status:** Phase 2 Tasks 2.1-2.3 complete, Task 2.4 pending manual configuration
+3. **Next action:** Proceed to Phase 3 Task 3.1 (Amazon Connect Instance Creation)
+4. **Read Phase 2 summary:** `deployment/phase-2-summary.md`
+5. **Review Plan of Record:** `.kiro/specs/ai-l1-phone-support-poc/plan-of-record.md` (lines 750-900 for Phase 3)
+6. **After Task 3.1:** Return to Task 2.4 and follow manual configuration guide
+7. **Verify budget status** before proceeding
+8. **Execute tasks one at a time** with approval gates
 
 ---
 
@@ -349,6 +410,24 @@ curl -X POST \
 
 ---
 
-**Status:** Phase 1 Complete - Awaiting Approval Gate 2  
-**Next Action:** User approval to proceed to Phase 2  
+## Critical Workflow Note
+
+**⚠️ IMPORTANT: Task Execution Order**
+
+The correct order for completing remaining tasks is:
+
+1. ✅ Phase 2 Tasks 2.1-2.3 (COMPLETE)
+2. ➡️ **NEXT:** Phase 3 Task 3.1 - Create Amazon Connect Instance
+3. ➡️ Note Connect OIDC URL from Task 3.1
+4. ➡️ **THEN:** Return to Phase 2 Task 2.4 - Configure AgentCore Gateway manually
+5. ➡️ Continue with Phase 3 Tasks 3.2-3.4
+
+**Why:** AgentCore Gateway (Task 2.4) requires the Amazon Connect OIDC discovery URL for inbound authentication. This URL is only available after the Connect instance is created in Task 3.1.
+
+**Configuration Guide for Task 2.4:** `deployment/agentcore-deployment-manual-guide.md`
+
+---
+
+**Status:** Phase 2 Tasks 2.1-2.3 Complete, Task 2.4 Pending Manual Configuration  
+**Next Action:** Proceed to Phase 3 Task 3.1 (Amazon Connect Instance Creation)  
 **Last Updated:** 2026-02-09
