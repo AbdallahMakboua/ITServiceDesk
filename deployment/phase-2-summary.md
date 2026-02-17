@@ -1,8 +1,8 @@
 # Phase 2 Summary - AgentCore Gateway Configuration
 
-**Date:** 2026-02-09  
+**Date:** 2026-02-18 (Updated)  
 **Phase:** Phase 2 - AgentCore Gateway Configuration  
-**Status:** TASKS 2.1-2.3 COMPLETE, TASK 2.4 PENDING MANUAL CONFIGURATION
+**Status:** ALL TASKS COMPLETE ✅
 
 ---
 
@@ -48,47 +48,22 @@ Phase 2 configures the Bedrock AgentCore Gateway (MCP server) to act as a secure
 - **Verification:** All tools match OpenAPI spec exactly
 - **Documentation:** `deployment/agentcore-tools-verification.md`
 
-### ⏳ Task 2.4: AgentCore Gateway Deployment
-- **Status:** PENDING MANUAL CONFIGURATION
-- **Reason:** Requires Amazon Connect OIDC URL (available after Task 3.1)
+### ✅ Task 2.4: AgentCore Gateway Deployment
+- **Status:** COMPLETE
+- **Completed:** 2026-02-18
+- **Gateway Name:** `poc-itsm-agentcore-gateway`
+- **Gateway ARN:** `arn:aws:bedrock-agentcore:us-east-1:714059461907:gateway/poc-itsm-agentcore-gateway-9ygtgj9qzu`
+- **Gateway ID:** `poc-itsm-agentcore-gateway-9ygtgj9qzu`
+- **Target Type:** API Gateway (`poc-itsm-api`, stage `poc`)
+- **Inbound Auth:** JWT (Connect OIDC Discovery URL)
+  - Discovery URL: `https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration`
+  - Allowed Audience: `arn:aws:connect:us-east-1:714059461907:instance/c1d8f6f7-3e9c-4d11-9ac0-04d7965d6ceb`
+  - Allowed Client: `c1d8f6f7-3e9c-4d11-9ac0-04d7965d6ceb`
+- **Outbound Auth:** API Key (`x-api-key` header)
+- **Operations:** 4/4 (create_ticket, get_ticket_status, add_ticket_comment, list_recent_tickets)
+- **IAM Role:** `poc-agentcore-gateway-role`
 - **Configuration Guide:** `deployment/agentcore-deployment-manual-guide.md`
-- **Deployment Log:** `deployment/agentcore-deployment-log.md` (to be completed)
-
----
-
-## Configuration Timing: IMPORTANT ⚠️
-
-**DO NOT configure AgentCore Gateway yet!**
-
-**Correct Workflow:**
-1. ✅ Complete Phase 2 Tasks 2.1-2.3 (DONE)
-2. ➡️ **NEXT:** Proceed to Phase 3 Task 3.1 (Amazon Connect Instance Creation)
-3. ➡️ Note the Connect OIDC discovery URL from Task 3.1
-4. ➡️ **THEN:** Return to Task 2.4 and configure AgentCore Gateway manually
-5. ➡️ Complete remaining Phase 3 tasks
-
-**Why This Order:**
-- AgentCore Gateway requires Connect OIDC URL for inbound authentication
-- Connect OIDC URL format: `https://<CONNECT_ALIAS>.my.connect.aws/.well-known/openid-configuration`
-- This URL is only available after Connect instance is created
-
----
-
-## Ready for Manual Configuration
-
-All prerequisites for AgentCore Gateway configuration are complete:
-
-### Configuration Information
-- **Gateway Name:** poc-itsm-agentcore-gateway
-- **Region:** us-east-1
-- **IAM Role:** arn:aws:iam::714059461907:role/poc-agentcore-gateway-role
-- **API Endpoint:** https://iixw3qtwo3.execute-api.us-east-1.amazonaws.com/poc
-- **API Key Secret:** arn:aws:secretsmanager:us-east-1:714059461907:secret:poc-itsm-api-key-thEbs7
-- **Tool Definitions:** config/agentcore-tools.json (4 tools)
-
-### Missing Information (from Task 3.1)
-- **Connect OIDC URL:** `https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration`
-  - ⚠️ Replace `poc-ai-l1-support` with actual Connect instance alias
+- **Deployment Log:** `deployment/agentcore-deployment-log.md`
 
 ---
 
@@ -255,9 +230,9 @@ Expected: {
 
 ## Key Information for Phase 3
 
-### AgentCore Gateway (After Manual Configuration)
-- **Name:** poc-itsm-agentcore-gateway
-- **ARN:** `<TO BE FILLED AFTER MANUAL CONFIGURATION>`
+### AgentCore Gateway
+- **Name:** `poc-itsm-agentcore-gateway`
+- **ARN:** `arn:aws:bedrock-agentcore:us-east-1:714059461907:gateway/poc-itsm-agentcore-gateway-9ygtgj9qzu`
 - **Region:** us-east-1
 
 ### IAM Role
@@ -276,6 +251,6 @@ Expected: {
 
 ---
 
-**Status:** Phase 2 Tasks 2.1-2.3 Complete, Task 2.4 Pending Manual Configuration  
-**Next Action:** Proceed to Phase 3 Task 3.1 (Amazon Connect Instance Creation)  
-**Last Updated:** 2026-02-09
+**Status:** Phase 2 ALL TASKS COMPLETE ✅  
+**Next Action:** Task 3.2 - Create Connect AI Agent IAM Role  
+**Last Updated:** 2026-02-18

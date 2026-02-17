@@ -1,19 +1,17 @@
 # AgentCore Gateway Manual Configuration Guide - Task 2.4
 
-## ⚠️ IMPORTANT: Configuration Timing
+## ✅ CONFIGURATION COMPLETE
 
-**DO NOT configure AgentCore Gateway yet!**
+**Gateway Deployed:** 2026-02-18  
+**Gateway ARN:** `arn:aws:bedrock-agentcore:us-east-1:714059461907:gateway/poc-itsm-agentcore-gateway-9ygtgj9qzu`
 
-**Correct Timing:** Configure AgentCore Gateway **AFTER** completing Task 3.1 (Amazon Connect Instance Creation).
+This guide documents the steps that were followed to configure the AgentCore Gateway manually via the AWS Console.
 
-**Reason:** AgentCore Gateway requires the Amazon Connect OIDC discovery URL for inbound authentication. This URL is only available after the Connect instance is created.
-
-**Workflow:**
-1. ✅ Complete Phase 2 Tasks 2.1-2.3 (DONE)
-2. ➡️ Proceed to Phase 3 Task 3.1: Create Amazon Connect Instance
-3. ➡️ Note the Connect OIDC discovery URL from Task 3.1
-4. ➡️ **THEN** return here to configure AgentCore Gateway
-5. ➡️ Complete remaining Phase 3 tasks
+**Workflow Completed:**
+1. ✅ Phase 2 Tasks 2.1-2.3 (DONE)
+2. ✅ Phase 3 Task 3.1: Amazon Connect Instance Created
+3. ✅ **Task 2.4:** AgentCore Gateway configured and deployed
+4. ➡️ Continue with remaining Phase 3 tasks
 
 ---
 
@@ -33,9 +31,12 @@ Before configuring AgentCore Gateway, ensure these are complete:
   - File: `config/agentcore-tools.json`
   - Tools: 4 (create_ticket, get_ticket_status, add_ticket_comment, list_recent_tickets)
 
-- ⏳ **Task 3.1:** Amazon Connect instance (TO BE COMPLETED NEXT)
+- ✅ **Task 3.1:** Amazon Connect instance (COMPLETE)
   - Instance: `poc-ai-l1-support`
+  - Instance ID: `c1d8f6f7-3e9c-4d11-9ac0-04d7965d6ceb`
+  - Instance ARN: `arn:aws:connect:us-east-1:714059461907:instance/c1d8f6f7-3e9c-4d11-9ac0-04d7965d6ceb`
   - OIDC URL: `https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration`
+  - Phone Number: `+16782709241`
 
 ---
 
@@ -500,26 +501,35 @@ These resources must be deleted separately if needed.
 
 ## Task Status
 
-**Task 2.4: AgentCore Gateway Deployment - MANUAL CONFIGURATION REQUIRED ⚠️**
+**Task 2.4: AgentCore Gateway Deployment - COMPLETE ✅**
 
-**Status:** Documentation complete, awaiting manual configuration
+**Completed:** 2026-02-18
 
-**Prerequisites Complete:**
+**Actual Configuration Applied:**
 - ✅ Task 2.1: API key in Secrets Manager
 - ✅ Task 2.2: IAM role created
 - ✅ Task 2.3: Tool definitions created
+- ✅ Task 3.1: Amazon Connect instance created
+- ✅ Inbound Auth: JWT with Connect OIDC Discovery URL
+  - Audience: Connect instance ARN
+  - Client: Connect instance ID
+- ✅ Target Type: API Gateway (`poc-itsm-api`, stage `poc`)
+- ✅ Outbound Auth: API Key (`x-api-key`)
+- ✅ All 4 operations with name overrides applied
+- ✅ Gateway deployed and active
 
-**Blocking Dependency:**
-- ⏳ Task 3.1: Amazon Connect instance (needed for OIDC URL)
+**Gateway ARN:**
+```
+arn:aws:bedrock-agentcore:us-east-1:714059461907:gateway/poc-itsm-agentcore-gateway-9ygtgj9qzu
+```
 
-**Action Required:**
-1. Complete Task 3.1 (Amazon Connect Instance Creation)
-2. Note the Connect OIDC discovery URL
-3. Return to this guide and follow manual configuration steps
-4. Document Gateway ARN in `deployment/agentcore-deployment-log.md`
+**Next Steps:**
+1. ➡️ Task 3.2: Create Connect AI Agent IAM Role
+2. ➡️ Task 3.3: AgentCore Gateway OIDC Configuration Update (if needed)
+3. ➡️ Task 3.4: Create Connect AI Agent (references this Gateway ARN)
 
 ---
 
 **Prepared by:** Kiro AI Assistant  
-**Date:** 2026-02-09  
-**Configuration Guide Version:** 1.0
+**Date:** 2026-02-18  
+**Configuration Guide Version:** 2.0 — Updated to reflect completed configuration

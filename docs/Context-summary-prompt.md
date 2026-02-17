@@ -1,9 +1,9 @@
 # Context Summary - DAS Holding AI IT L1 Voice Service Desk PoC
 
-**Last Updated:** 2026-02-09  
-**Current Phase:** Phase 3 Task 3.1 Complete, Awaiting Phone Number Quota Increase  
-**Status:** PAUSED - Waiting for AWS Support to resolve phone number quota issue  
-**Next Action:** Resume with Task 2.4 (AgentCore Gateway) once quota is resolved
+**Last Updated:** 2026-02-18  
+**Current Phase:** Phase 2 Complete, Phase 3 Active - Proceeding with Task 3.2  
+**Status:** ACTIVE  
+**Next Action:** Task 3.2 (Connect AI Agent IAM Role Creation)
 
 ---
 
@@ -17,34 +17,28 @@
 
 ---
 
-## Current Status: Phase 3 Task 3.1 Complete, PAUSED for Phone Number Quota
+## Current Status: Phase 3 Active, Phone Number Claimed
 
 **Phase 1: Mock ITSM Backend Implementation - COMPLETE ✅**
 
 All 6 tasks in Phase 1 have been successfully completed and verified. The mock ITSM backend is fully operational with DynamoDB storage, Lambda function, API Gateway REST API, and S3 bucket for OpenAPI specification.
 
-**Phase 2: AgentCore Gateway Configuration - PARTIALLY COMPLETE ⏳**
+**Phase 2: AgentCore Gateway Configuration - COMPLETE ✅**
 
-Tasks 2.1-2.3 are complete. Task 2.4 (AgentCore Gateway Deployment) requires manual configuration AFTER Task 3.1 (Amazon Connect Instance Creation) because it needs the Connect OIDC discovery URL.
+All 4 tasks (2.1-2.4) are complete. AgentCore Gateway `poc-itsm-agentcore-gateway` is deployed and active.
 
-**Phase 3: Amazon Connect Setup - PARTIALLY COMPLETE ⏳**
+**Phase 3: Amazon Connect Setup - IN PROGRESS ⏳**
 
-Task 3.1 (Amazon Connect Instance Creation) is complete. However, phone number claiming is blocked due to service quota limitation.
+Task 3.1 (Amazon Connect Instance Creation) is complete. Phone number +16782709241 has been claimed. Proceeding with remaining tasks.
 
-### ⚠️ BLOCKING ISSUE: Phone Number Service Quota
+### ✅ Phone Number Quota RESOLVED
 
-**Problem:** Amazon Connect instance has a phone number service quota of 0, preventing phone number claiming.
-
-**Status:** Awaiting AWS Support response for quota increase request.
-
-**Impact:** Cannot complete voice-based PoC until quota is increased. Phone number is required for Task 3.4 (Contact Flow testing) and Phase 4 (E2E testing).
-
-**Alternative Options Discussed:**
-1. **Chat-based testing** (recommended if quota takes too long)
-2. **Direct API testing** (skips Connect layer)
-3. **Wait for quota increase** (current approach)
-
-**Cost While Waiting:** ~$0.015/day (~$0.45/month) for idle resources - well within budget.
+**Phone Number:** +16782709241  
+**Type:** DID (Direct Inward Dialing)  
+**Country:** United States (+1)  
+**Claimed Date:** 2026-02-18  
+**Cost:** ~$0.03/day (~$1/month)  
+**Status:** Active and assigned to poc-ai-l1-support instance
 
 ### Completed Tasks
 
@@ -150,29 +144,29 @@ Task 3.1 (Amazon Connect Instance Creation) is complete. However, phone number c
 - **NO delete or administrative operations** ✅
 - **Documentation:** `deployment/agentcore-tools-verification.md`
 
-### ⏳ Task 2.4: AgentCore Gateway Deployment
-- **Status:** READY FOR MANUAL CONFIGURATION (waiting for quota resolution)
-- **Reason:** Requires Amazon Connect OIDC URL (NOW AVAILABLE from Task 3.1)
-- **OIDC URL:** `https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration`
-- **Configuration Guide:** `deployment/agentcore-deployment-manual-guide.md`
-- **Deployment Log:** `deployment/agentcore-deployment-log.md` (to be completed)
-
-**✅ OIDC URL NOW AVAILABLE:**
-- Connect instance created in Task 3.1
-- OIDC URL verified and accessible
-- Ready to configure AgentCore Gateway once work resumes
-
-**Next Steps After Quota Resolution:**
-1. ✅ Phase 2 Tasks 2.1-2.3 (COMPLETE)
-2. ✅ Phase 3 Task 3.1 - Amazon Connect Instance (COMPLETE)
-3. ➡️ **NEXT:** Task 2.4 - Configure AgentCore Gateway manually with OIDC URL
-4. ➡️ Task 3.2 - Create Connect AI Agent IAM role
-5. ➡️ Task 3.3 - Update AgentCore Gateway OIDC configuration (if needed)
-6. ➡️ Task 3.4 - Create Connect AI Agent and contact flow (requires phone number)
+### ✅ Task 2.4: AgentCore Gateway Deployment
+- **Status:** COMPLETE
+- **Completed:** 2026-02-18
+- **Gateway Name:** `poc-itsm-agentcore-gateway`
+- **Gateway ARN:** `arn:aws:bedrock-agentcore:us-east-1:714059461907:gateway/poc-itsm-agentcore-gateway-9ygtgj9qzu`
+- **Gateway ID:** `poc-itsm-agentcore-gateway-9ygtgj9qzu`
+- **Target Type:** API Gateway (`poc-itsm-api`, stage `poc`)
+- **Inbound Auth:** JWT with Connect OIDC
+  - Discovery URL: `https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration`
+  - Audience: Connect instance ARN
+  - Client: Connect instance ID (`c1d8f6f7-3e9c-4d11-9ac0-04d7965d6ceb`)
+- **Outbound Auth:** API Key (`x-api-key` header)
+- **Operations:** create_ticket, get_ticket_status, add_ticket_comment, list_recent_tickets
+- **Deployment Log:** `deployment/agentcore-deployment-log.md`
 
 ---
 
-## Key Resources for Phase 2
+## Key Resources
+
+### AgentCore Gateway (NEW - Task 2.4)
+- **Name:** poc-itsm-agentcore-gateway
+- **ARN:** arn:aws:bedrock-agentcore:us-east-1:714059461907:gateway/poc-itsm-agentcore-gateway-9ygtgj9qzu
+- **Gateway ID:** poc-itsm-agentcore-gateway-9ygtgj9qzu
 
 ### API Gateway
 - **API ID:** iixw3qtwo3
@@ -191,6 +185,12 @@ Task 3.1 (Amazon Connect Instance Creation) is complete. However, phone number c
 ### DynamoDB
 - **Table:** poc-itsm-tickets
 - **ARN:** arn:aws:dynamodb:us-east-1:714059461907:table/poc-itsm-tickets
+
+### Amazon Connect
+- **Instance:** poc-ai-l1-support
+- **Instance ID:** c1d8f6f7-3e9c-4d11-9ac0-04d7965d6ceb
+- **Instance ARN:** arn:aws:connect:us-east-1:714059461907:instance/c1d8f6f7-3e9c-4d11-9ac0-04d7965d6ceb
+- **Phone Number:** +16782709241
 
 ### Account
 - **Account ID:** 714059461907
@@ -226,15 +226,13 @@ All Phase 0 documentation tasks (0.1-0.10) were completed retroactively after us
 - **Access URL:** https://poc-ai-l1-support.my.connect.aws
 - **OIDC Discovery URL:** https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration
 - **OIDC Verified:** ✅ Accessible and returns valid JSON
-- **Phone Number:** ⚠️ NOT CLAIMED - Blocked by service quota (0 phone numbers allowed)
+- **Phone Number:** ✅ +16782709241 (DID, claimed 2026-02-18)
 - **Documentation:** `deployment/connect-instance-log.md`
 
 **Region Compliance Note:** Instance was initially created in us-west-2 by mistake, then deleted and recreated in us-east-1 to comply with Plan of Record requirements.
 
-**Phone Number Quota Issue:**
-- Service quota shows "Phone numbers per instance: Not applicable / Not available / Resource level"
-- Cannot claim phone numbers until AWS Support resolves quota
-- Quota increase request submitted, awaiting response
+**Phone Number Quota Issue: RESOLVED** ✅  
+Quota increase approved by AWS Support. Phone number +16782709241 claimed on 2026-02-18.
 
 ### ⏳ Task 3.2: Connect AI Agent IAM Role Creation (PENDING)
 - Create IAM role: poc-connect-ai-agent-role
@@ -247,12 +245,12 @@ All Phase 0 documentation tasks (0.1-0.10) were completed retroactively after us
 - **Note:** This may be done as part of Task 2.4 manual configuration
 - **Can be completed while waiting for quota**
 
-### ⏳ Task 3.4: Connect AI Agent Creation (BLOCKED)
+### ⏳ Task 3.4: Connect AI Agent Creation (READY)
 - Create AI Agent: poc-l1-support-agent
 - Configure AI Agent instructions (voice-first, short responses)
 - Link to AgentCore Gateway
 - Configure escalation path
-- **BLOCKED:** Requires phone number for testing
+- **Phone number available:** +16782709241
 
 ---
 
@@ -260,8 +258,9 @@ All Phase 0 documentation tasks (0.1-0.10) were completed retroactively after us
 
 **Total Budget:** $10.00  
 **Alert Threshold:** $8.00  
-**Estimated Spent (Phase 1+2+3.1):** ~$0.43  
-**Remaining:** ~$9.57  
+**Estimated Spent (Phase 1+2+3.1):** ~$0.46  
+**Phone Number Daily Cost:** ~$0.03/day  
+**Remaining:** ~$9.54  
 **Status:** WELL WITHIN BUDGET ✅
 
 ### Cost Breakdown
@@ -278,7 +277,7 @@ All Phase 0 documentation tasks (0.1-0.10) were completed retroactively after us
 
 **Phase 3 (Task 3.1):**
 - Amazon Connect Instance: $0.00 (no charge for idle instance)
-- Phone Number: $0.00 (not yet claimed due to quota issue)
+- Phone Number: ~$0.03/day (~$1/month) - DID +16782709241 claimed 2026-02-18
 
 ### Idle Resource Costs While Waiting for Quota
 **Daily Cost:** ~$0.015/day (~$0.45/month)
@@ -398,7 +397,7 @@ S3 Bucket (poc-itsm-openapi-specs-714059461907)
 - `deployment/agentcore-iam-log.md` (Task 2.2)
 - `deployment/agentcore-tools-verification.md` (Task 2.3)
 - `deployment/agentcore-deployment-manual-guide.md` (Task 2.4 guide)
-- `deployment/agentcore-deployment-log.md` (Task 2.4 - to be completed)
+- `deployment/agentcore-deployment-log.md` (Task 2.4 - COMPLETE ✅)
 - `deployment/phase-2-summary.md`
 
 ### Code
@@ -420,36 +419,20 @@ S3 Bucket (poc-itsm-openapi-specs-714059461907)
 
 ## How to Resume Work
 
-When resuming work on this project after phone number quota is resolved:
+Project is now ACTIVE. Phone number quota resolved, +16782709241 claimed.
 
-1. **Review this context summary** to understand current status
-2. **Current status:** Phase 3 Task 3.1 complete, awaiting phone number quota increase
-3. **Blocking issue:** Cannot claim phone number due to service quota of 0
-4. **OIDC URL available:** https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration
-5. **Next actions (in order):**
+1. **Current status:** Phase 3 active, phone number claimed
+2. **OIDC URL available:** https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration
+3. **Phone Number:** +16782709241
+4. **Next actions (in order):**
    - ➡️ Task 2.4: Configure AgentCore Gateway with OIDC URL (manual configuration)
-   - ➡️ Task 3.2: Create Connect AI Agent IAM role (can do while waiting)
+   - ➡️ Task 3.2: Create Connect AI Agent IAM role
    - ➡️ Task 3.3: Update AgentCore Gateway OIDC configuration (if needed)
-   - ➡️ **Once quota resolved:** Claim phone number in Connect
    - ➡️ Task 3.4: Create Connect AI Agent and contact flow
+   - ➡️ Task 3.5: Create Connect Contact Flow
    - ➡️ Phase 4: End-to-End Testing
-6. **Alternative if quota takes too long:** Consider chat-based testing instead of voice
-7. **Verify budget status** before proceeding (currently ~$0.43 spent, ~$9.57 remaining)
-8. **Execute tasks one at a time** with approval gates
-
-### Phone Number Quota Resolution Steps
-
-**When AWS Support responds:**
-1. Verify quota increase was approved
-2. Check Service Quotas console for updated limit
-3. Claim phone number in Connect admin console:
-   - Go to Channels → Phone numbers → Claim a number
-   - Select United States (+1), DID type
-   - Choose cheapest available number
-   - Assign to default contact flow
-4. Test phone number by calling it
-5. Document phone number in `deployment/connect-instance-log.md`
-6. Continue with Task 3.4 (Contact Flow configuration)
+5. **Verify budget status** before proceeding (currently ~$0.46 spent, ~$9.54 remaining)
+6. **Execute tasks one at a time** with approval gates
 
 ---
 
@@ -484,39 +467,28 @@ curl -X POST \
 
 ## Critical Workflow Note
 
-**⚠️ CURRENT STATUS: PAUSED - Awaiting Phone Number Quota Resolution**
+**✅ CURRENT STATUS: ACTIVE - Phone Number Claimed, Resuming Work**
 
 **Completed Tasks:**
-1. ✅ Phase 2 Tasks 2.1-2.3 (COMPLETE)
-2. ✅ Phase 3 Task 3.1 - Amazon Connect Instance Created (COMPLETE)
-3. ✅ Connect OIDC URL obtained and verified
+1. ✅ Phase 1 Tasks 1.1-1.6 (COMPLETE)
+2. ✅ Phase 2 Tasks 2.1-2.3 (COMPLETE)
+3. ✅ Phase 3 Task 3.1 - Amazon Connect Instance Created (COMPLETE)
+4. ✅ Phone number +16782709241 claimed (2026-02-18)
+5. ✅ Connect OIDC URL obtained and verified
 
-**Blocking Issue:**
-- ⚠️ Phone number service quota is 0 (cannot claim phone numbers)
-- ⚠️ Quota increase request submitted to AWS Support
-- ⚠️ Awaiting response (typically 24-48 hours)
-
-**Tasks That Can Be Done While Waiting:**
-1. ➡️ Task 2.4 - Configure AgentCore Gateway manually (has OIDC URL now)
-2. ➡️ Task 3.2 - Create Connect AI Agent IAM role
-3. ➡️ Task 3.3 - Update AgentCore Gateway OIDC configuration
-
-**Tasks Blocked by Phone Number Quota:**
-1. ⏳ Claim phone number in Connect
-2. ⏳ Task 3.4 - Create Connect AI Agent and contact flow (needs phone for testing)
-3. ⏳ Phase 4 - End-to-End Testing (needs phone for voice calls)
-
-**Alternative Approach if Quota Takes Too Long:**
-- Use chat-based testing instead of voice
-- Validates same integration: Connect → AI Agent → AgentCore Gateway → Mock API
-- Zero additional cost
-- Available immediately
+**Next Tasks:**
+1. ➡️ Task 3.2 - Create Connect AI Agent IAM role
+2. ➡️ Task 3.3 - Update AgentCore Gateway OIDC configuration (if needed)
+3. ➡️ Task 3.4 - Create Connect AI Agent
+4. ➡️ Task 3.5 - Create Connect Contact Flow
+5. ➡️ Phase 4 - End-to-End Testing
 
 **Configuration Guide for Task 2.4:** `deployment/agentcore-deployment-manual-guide.md`  
-**OIDC URL for Task 2.4:** `https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration`
+**OIDC URL for Task 2.4:** `https://poc-ai-l1-support.my.connect.aws/.well-known/openid-configuration`  
+**Phone Number:** +16782709241
 
 ---
 
-**Status:** Phase 3 Task 3.1 Complete, PAUSED for Phone Number Quota Resolution  
-**Next Action:** Configure AgentCore Gateway (Task 2.4) or wait for quota increase  
-**Last Updated:** 2026-02-09
+**Status:** Phase 3 Active, Phone Number Claimed, Proceeding with Task 3.2  
+**Next Action:** Task 3.2 - Create Connect AI Agent IAM Role  
+**Last Updated:** 2026-02-18
