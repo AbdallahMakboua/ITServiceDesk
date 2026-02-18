@@ -103,54 +103,63 @@ SECURITY:
 - Look under **Flows** → **AI Agents** or **Routing** → **AI Agents**
 - Contact AWS Support if the feature is not available
 
-### Step 3: Configure Basic Settings
+### Step 3: Configure Basic Settings ✅ COMPLETE
 
-**Agent Name:**
-```
-poc-l1-support-agent
-```
+**Agent Name:** `poc-l1-support-agent` ✅
+**Agent Type:** Orchestration (SelfServiceOrchestrator template) ✅
+**Status:** Created ✅
 
-**Description:**
-```
-PoC AI Agent for L1 IT support - handles ticket creation and management via AgentCore Gateway
-```
+### Step 4: Configure Security Profiles
 
-**Language:**
-- Select: **English (US)**
+**Current Screen:** Security Profiles section
 
-**Voice:**
-- Select a natural-sounding voice (e.g., **Joanna**, **Matthew**, or **Neural voices** if available)
-- Recommendation: Use Amazon Polly Neural voices for better quality
+**What to do:**
+1. Click on the **"Select Security Profiles"** dropdown
+2. Look for a security profile that includes:
+   - Basic Connect permissions
+   - Agent permissions
+   - Or create a new security profile if needed
+3. **Recommendation:** Select the default or admin security profile for the PoC
+4. This allows the AI Agent to access necessary Connect features
 
-### Step 4: Configure IAM Role
+**Note:** For a PoC, you can use a permissive security profile. In production, you'd restrict this.
 
-**IAM Role:**
-- Select: **Use an existing role**
-- Role ARN: `arn:aws:iam::714059461907:role/poc-connect-ai-agent-role`
+### Step 5: Configure Tools - ADD AGENTCORE GATEWAY TOOLS ⚠️ CRITICAL
 
-**Note:** This role was created in Task 3.2 and has permissions to invoke the AgentCore Gateway.
+**Current Status:** You have 3 default tools (Complete, Escalate, Retrieve)
 
-### Step 5: Link AgentCore Gateway
+**What you need to do:**
+1. Click **"Add tool"** button (top right of Tools section)
+2. You need to add 4 custom tools from your AgentCore Gateway:
+   - `create_ticket`
+   - `get_ticket_status`
+   - `add_ticket_comment`
+   - `list_recent_tickets`
 
-**AgentCore Gateway Configuration:**
+**How to add AgentCore Gateway tools:**
+- Look for an option to add **"External tools"** or **"MCP tools"** or **"Bedrock AgentCore tools"**
+- Select your AgentCore Gateway: `poc-itsm-agentcore-gateway`
+- The 4 tools should appear automatically from the gateway
 
-1. Look for **AgentCore Gateway** or **MCP Server** section
-2. Click **Add Gateway** or **Link Gateway**
-3. Select or enter:
-   - Gateway Name: `poc-itsm-agentcore-gateway`
-   - Gateway ARN: `arn:aws:bedrock-agentcore:us-east-1:714059461907:gateway/poc-itsm-agentcore-gateway-9ygtgj9qzu`
+**Keep the default tools:**
+- ✅ **Complete** - Mark conversation as complete
+- ✅ **Escalate** - Escalate to human agent
+- ⚠️ **Retrieve** - Shows "Insufficient" permissions (you can ignore this or remove it)
 
-**Available Tools:**
+### Step 6: Configure Prompts - UPDATE INSTRUCTIONS
 
-The AI Agent will have access to these tools from the AgentCore Gateway:
-- `create_ticket` - Create a new support ticket
-- `get_ticket_status` - Retrieve ticket status by ID
-- `add_ticket_comment` - Add a comment to an existing ticket
-- `list_recent_tickets` - List recent tickets for a caller
+**Current Screen:** Prompts section
 
-**Note:** These tools are automatically discovered from the AgentCore Gateway configuration.
+**What you see:**
+- Prompt: **SelfServiceOrchestration** (Status: Published, Version: 1)
+- This is the default prompt from the template
 
-### Step 6: Configure AI Agent Instructions
+**What to do:**
+1. Click **"Edit"** button next to the SelfServiceOrchestration prompt
+2. You'll see the prompt editor
+3. **Replace the entire prompt** with our custom IT support instructions (see below)
+
+**Custom IT Support Instructions to paste:**
 
 **Instructions Field:**
 
@@ -164,7 +173,32 @@ Copy and paste the AI Agent instructions from the section above into the instruc
 - ✅ Escalation path mentioned
 - ✅ Responses are short and voice-optimized
 
-### Step 7: Configure Advanced Settings (Optional)
+### Step 7: Add AgentCore Gateway Tools ⚠️ CRITICAL STEP
+
+**Current Status:** You have 3 default tools, but you need to add 4 custom tools from AgentCore Gateway
+
+**Steps:**
+1. Scroll to the **Tools** section
+2. Click **"Add tool"** button (top right)
+3. Look for options to add:
+   - **External tools**
+   - **MCP tools** 
+   - **Bedrock AgentCore tools**
+   - **Custom tools**
+4. Select your AgentCore Gateway: `poc-itsm-agentcore-gateway`
+5. The following 4 tools should appear:
+   - `create_ticket`
+   - `get_ticket_status`
+   - `add_ticket_comment`
+   - `list_recent_tickets`
+6. Select all 4 tools and add them
+
+**If you don't see an option to add AgentCore Gateway tools:**
+- The integration might need to be configured differently
+- You may need to add tools manually with API specifications
+- Let me know and I'll provide alternative instructions
+
+### Step 8: Configure Guardrails (Optional)
 
 **Session Timeout:**
 - Default: 5 minutes (adjust if needed)
@@ -332,3 +366,83 @@ If rollback is needed:
 **Prepared by:** Kiro AI Assistant  
 **Date:** 2026-02-18  
 **Status:** Configuration Guide Ready
+
+
+### Step 8: Configure Guardrails (Optional)
+
+**Current Status:** Guardrails (0)
+
+**What to do:**
+- For this PoC, you can skip adding guardrails
+- Guardrails are used to implement content filtering and safety policies
+- Our instructions already include security guidelines (no passwords, etc.)
+
+**If you want to add guardrails (optional):**
+- Click "Add guardrail"
+- Configure content filters for:
+  - Sensitive information (PII, passwords)
+  - Inappropriate content
+  - Topic restrictions
+
+### Step 9: Save and Publish
+
+**After completing all configurations:**
+1. Look for **"Save"** or **"Publish"** button (usually top right or bottom)
+2. Click to save your changes
+3. The AI Agent will be published and ready to use
+4. You may need to publish a new version if you edited the prompt
+
+---
+
+## Current Status Summary
+
+Based on your screenshot, here's what you need to do:
+
+### ✅ Completed:
+1. Agent created: `poc-l1-support-agent`
+2. Agent type: Orchestration (SelfServiceOrchestrator)
+3. Default tools added: Complete, Escalate, Retrieve
+
+### ⏳ Next Steps (In Order):
+
+1. **Configure Security Profiles** (Step 4)
+   - Select a security profile from the dropdown
+   - Use default/admin profile for PoC
+
+2. **Edit the Prompt** (Step 6)
+   - Click "Edit" on SelfServiceOrchestration prompt
+   - Replace with our custom IT support instructions (see AI Agent Instructions section above)
+
+3. **Add AgentCore Gateway Tools** (Step 7) ⚠️ CRITICAL
+   - Click "Add tool"
+   - Add the 4 ITSM tools from AgentCore Gateway
+   - This is essential for ticket operations
+
+4. **Save/Publish** (Step 9)
+   - Save all changes
+   - Publish the agent
+
+---
+
+## Important Notes for Current Configuration
+
+### Security Profiles
+The "Retrieve" tool shows "Insufficient" permissions. This is okay - it's for knowledge base search which we're not using. You can:
+- Leave it as is (it won't be used)
+- Or remove it if you want a cleaner configuration
+
+### Tools Priority
+The most critical step is **adding the 4 AgentCore Gateway tools**. Without these, the AI Agent cannot:
+- Create tickets
+- Check ticket status
+- Add comments
+- List tickets
+
+### Prompt Customization
+Make sure to edit the SelfServiceOrchestration prompt with our custom instructions that include:
+- IT support greeting
+- Ticket creation workflow
+- Security guidelines (no passwords)
+- Escalation path
+
+---
